@@ -107,7 +107,7 @@ class Less_Core
 		{
 			touch($filename, filemtime($file) - 3600);
 
-			lessc::ccompile($file, $filename);
+			self::_ccompile($file, $filename);
 		}
 
 		return $filename;
@@ -176,19 +176,49 @@ class Less_Core
 	 */
 	public static function _compile($filename)
 	{
-		$less = new lessc($filename);
+    if (Kohana::$config->load('less.vendor_internal') === TRUE)
+    {
+      require_once '../vendor/lessphp/lessc.inc.php';
+	  	$less = new lessc($filename);
 
-		try
-		{
-			$compiled = $less->parse();
-			$compressed = self::_compress($compiled);
-			file_put_contents($filename, $compressed);
-		}
-		catch (LessException $ex)
-		{
-			exit($ex->getMessage());
-		}
+  		try
+		  {
+	  		$compiled = $less->parse();
+  			$compressed = self::_compress($compiled);
+		  	file_put_contents($filename, $compressed);
+	  	}
+  		catch (LessException $ex)
+		  {
+	  		exit($ex->getMessage());
+  		}
+    } else {
+      $compiled = shell_exec('lessc ' . $filename);
+      if (is_null($compiled)) exit($compiled);
+  		$compressed = self::_compress($compiled);
+		  file_put_contents($filename, $compressed);
+    }
 	}
+
+  /**
+   * compile to $in to $out if $in is newer than $out
+   * @param string $original path to original file
+   * @param string $compiled path to compiled file
+	 * @retval boolean 
+   **/
+  public static function _ccompile($original, $compiled)
+  {
+    if (Kohana::$config->load('less.vendor_internal') === TRUE)
+    {
+      require_once '../vendor/lessphp/lessc.inc.php';
+	  	return lessc::ccompile($original, $compiled);
+    } else {
+      if (!is_file($compiled) || filemtime($original) > filemtime($compiled)) {
+        return (int) shell_exec('lessc ' . $original . ' >' . $compiled);
+      } else {
+        return true;
+      }
+    }
+  }
 
 	/**
 	 * Get the most recent modified date of files
