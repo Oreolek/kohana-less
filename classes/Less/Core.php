@@ -103,9 +103,9 @@ class Less_Core
 		$filename = $path.$compiled;
 
 		// if the file exists no need to generate
-		if ( ! file_exists(SYSPATH.$filename))
+		if ( ! file_exists(DOCROOT.$filename))
 		{
-			touch(SYSPATH.$filename, filemtime($file) - 3600);
+			touch(DOCROOT.$filename, filemtime($file) - 3600);
 
 			self::_ccompile($file, $filename);
 		}
