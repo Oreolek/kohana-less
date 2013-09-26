@@ -1,5 +1,10 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
+/**
+ * LESS wrapper for Kohana.
+ * @package    Kohana
+ * @category   Less
+ **/
 class Less_Core
 {
 	// Default less files extension
