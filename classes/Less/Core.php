@@ -183,7 +183,7 @@ class Less_Core
 	{
     if (Kohana::$config->load('less.vendor_internal') === TRUE)
     {
-      require_once '../vendor/lessphp/lessc.inc.php';
+      require_once '../../vendor/lessphp/lessc.inc.php';
 	  	$less = new lessc($filename);
 
   		try
