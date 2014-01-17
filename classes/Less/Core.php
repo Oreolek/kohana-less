@@ -55,7 +55,7 @@ class Less_Core
 		$config = Kohana::$config->load('less');
 
 		// if compression is allowed
-		if ($config['compress'])
+		if ($config['compress'] AND $config['vendor_internal'])
 		{
 			return HTML::style(self::_combine($stylesheets), array('media' => $media));
 		}
@@ -197,7 +197,12 @@ class Less_Core
 	  		exit($ex->getMessage());
   		}
     } else {
-      $compiled = shell_exec('lessc ' . $filename);
+      $command ='lessc ';
+      if (Kohana::$config->load('less')->get('compress'))
+      {
+         $command = 'lessc --clean-css ';
+      }
+      $compiled = shell_exec($command . $filename);
       if (is_null($compiled)) exit($compiled);
   		$compressed = self::_compress($compiled);
 		  file_put_contents($filename, $compressed);
@@ -218,7 +223,12 @@ class Less_Core
 	  	return lessc::ccompile($original, $compiled);
     } else {
       if (!is_file($compiled) || filemtime($original) > filemtime($compiled)) {
-        return (int) shell_exec('lessc ' . $original . ' >' . $compiled);
+        $command ='lessc ';
+        if (Kohana::$config->load('less')->get('compress'))
+        {
+           $command = 'lessc --clean-css ';
+        }
+        return (int) shell_exec($command . $original . ' >' . $compiled);
       } else {
         return true;
       }
