@@ -16,9 +16,11 @@ class Less_Core
 	 * @param   mixed     array of css paths or single path
 	 * @param   string    value of media css type
 	 * @param   boolean   allow compression
+   * @param   boolean   return HTML style tag or file paths
 	 * @return  string    link tag pointing to the css paths
+   * @return  array     array of css paths
 	 */
-	public static function compile($array = '', $media = 'screen')
+	public static function compile($array = '', $media = 'screen', $html = TRUE)
 	{
 		if (is_string($array))
 		{
@@ -64,10 +66,25 @@ class Less_Core
 		foreach ($stylesheets as $file)
 		{
 			$filename = self::_get_filename($file, $config['path']);
-			array_push($assets, HTML::style($filename, array('media' => $media)));
+      if ($html)
+      {
+        $style = HTML::style($filename, array('media' => $media)); 
+      }
+      else
+      {
+        $style = $filename;
+      }
+			array_push($assets, $style);
 		}
 
-		return implode("\n", $assets);
+    if ($html)
+    {
+  		return implode("\n", $assets);
+    }
+    else
+    {
+      return $assets;
+    }
 	}
 
 	/**
