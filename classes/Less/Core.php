@@ -217,7 +217,7 @@ class Less_Core
       $command ='lessc ';
       if (Kohana::$config->load('less')->get('compress'))
       {
-         $command = 'lessc --clean-css ';
+         $command = 'lessc -x --clean-css ';
       }
       $compiled = shell_exec($command . $filename);
       if (is_null($compiled)) exit($compiled);
