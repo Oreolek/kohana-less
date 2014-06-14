@@ -49,12 +49,6 @@ class Less_Core
 		// get less config
 		$config = Kohana::$config->load('less');
 
-		// if compression is allowed
-		if ($config['compress'])
-		{
-			return HTML::style(self::_combine($stylesheets), array('media' => $media));
-		}
-
 		// if no compression
 		foreach ($stylesheets as $file)
 		{
@@ -113,92 +107,6 @@ class Less_Core
 		return $filename;
 	}
 
-	/**
-	 * Combine the files
-	 *
-	 * @param   array    array of asset files
-	 * @return  string   path to the asset file
-	 */
-	protected static function _combine($files)
-	{
-		// get assets' css config
-		$config = Kohana::$config->load('less');
-
-		// get the most recent modified time of any of the files
-		$last_modified = self::_get_last_modified($files);
-
-		// compose the asset filename
-		$compiled = md5(implode('|', $files)).'-'.$last_modified.'.css';
-
-		// compose the path to the asset file
-		$filename = $config['path'].$compiled;
-
-		// if the file exists no need to generate
-		if ( ! file_exists($filename))
-		{
-			self::_generate_assets($filename, $files);
-		}
-
-		return $filename;
-	}
-
-	/**
-	 * Generate an asset file
-	 *
-	 * @param   string   filename of the asset file
-	 * @param   array    array of source files
-	 */
-	protected static function _generate_assets($filename, $files)
-	{
-		// create data holder
-		$data = '';
-
-		touch($filename);
-
-		ob_start();
-
-		foreach($files as $file)
-		{
-			$data .= file_get_contents($file);
-		}
-
-		echo $data;
-
-		file_put_contents($filename, ob_get_clean(), LOCK_EX);
-
-		self::_compile($filename);
-	}
-
-	/**
-	 * Compiles the file from less to css format
-	 *
-	 * @param   string   path to the file to compile
-	 */
-	public static function _compile($filename)
-	{
-    if (Kohana::$config->load('less.vendor_internal') === TRUE)
-    {
-      require_once '../vendor/lessphp/lessc.inc.php';
-	  	$less = new lessc($filename);
-
-  		try
-		  {
-	  		$compiled = $less->parse();
-  			$compressed = self::_compress($compiled);
-		  	file_put_contents($filename, $compressed);
-	  	}
-  		catch (LessException $ex)
-		  {
-	  		exit($ex->getMessage());
-  		}
-    } else {
-      $compiled = shell_exec('lessc ' . $filename);
-      if (is_null($compiled)) exit($compiled);
-  		$compressed = self::_compress($compiled);
-		  file_put_contents($filename, $compressed);
-    }
-	}
-
   /**
    * compile to $in to $out if $in is newer than $out
    * @param string $original path to original file
@@ -207,13 +115,19 @@ class Less_Core
    **/
   public static function _ccompile($original, $compiled)
   {
-    if (Kohana::$config->load('less.vendor_internal') === TRUE)
+    $config = Kohana::$config->load('less');
+    if ($config['vendor_internal'])
     {
       require_once '../vendor/lessphp/lessc.inc.php';
 	  	return lessc::ccompile($original, $compiled);
     } else {
       if (!is_file($compiled) || filemtime($original) > filemtime($compiled)) {
-        return (int) shell_exec('lessc ' . $original . ' >' . $compiled);
+        $command = 'lessc';
+        if ($config['compress'])
+        {
+          $command .= ' --clean-css';
+        }
+        return (int) shell_exec($command.' '.$original.' >'.$compiled);
       } else {
         return true;
       }

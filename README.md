@@ -12,7 +12,7 @@ To Use
 2. Include less module in your application's bootstrap: 'less' => MODPATH.'less'
 3. Copy the less config file from /modules/less/config/less.php to your application's config directory
 4. From your less.php config file, put the 'path' to where you want the CSS files compiled / compressed, the folder must be writable
-5. You can set 'compress' to TRUE on your less.php config file if you want your CSS files to be combined in to one file and compressed (to lessen server calls)
+5. You can set 'compress' to TRUE on your less.php config file if you want your CSS files to be minified
 
 Sample Code
 ------------
